@@ -218,7 +218,7 @@ class pdf_canellencf extends ModelePDFSuppliersInvoices
 		// Load translation files required by the page
 		$outputlangs->loadLangs(array("main", "dict", "companies", "bills", "products"));
 
-		$nblines = count($object->lines);
+		$nblines = is_array($object->lines) ? count($object->lines) : 0;
 
 		if ($conf->fournisseur->facture->dir_output)
 		{
@@ -264,8 +264,8 @@ class pdf_canellencf extends ModelePDFSuppliersInvoices
 				$reshook = $hookmanager->executeHooks('beforePDFCreation', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 
 				// Set nblines with the new facture lines content after hook
-				$nblines = count($object->lines);
-				$nbpayments = count($object->getListOfPayments());
+				$nblines = is_array($object->lines) ? count($object->lines) : 0;
+				$nbpayments = is_array($object->getListOfPayments()) ? count($object->getListOfPayments()) : 0;
 
 				// Create pdf instance
 				$pdf = pdf_getInstance($this->format);
@@ -309,7 +309,7 @@ class pdf_canellencf extends ModelePDFSuppliersInvoices
 				// Set $this->atleastonediscount if you have at least one discount
 				for ($i = 0; $i < $nblines; $i++)
 				{
-					if ($object->lines[$i]->remise_percent)
+					if (isset($object->lines[$i]) && $object->lines[$i]->remise_percent)
 					{
 						$this->atleastonediscount++;
 					}

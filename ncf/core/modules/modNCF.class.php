@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /* Copyright (C) 2004-2018  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2018-2019  Nicolas ZABOURI         <info@inovea-conseil.com>
  * Copyright (C) 2019-2020  Frédéric France         <frederic.france@netlogic.fr>
@@ -6,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -33,6 +34,11 @@ include_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
  */
 class modNCF extends DolibarrModules
 {
+	/**
+	 * @var DoliDB Database handler.
+	 */
+	public $db;
+
 	/**
 	 * Constructor. Define names, constants, directories, boxes, permissions
 	 *
@@ -230,9 +236,9 @@ class modNCF extends DolibarrModules
 			'tabrowid'=>array("rowid", "rowid", "rowid"),
 			// Condition to show each dictionary
 			'tabcond'=>array(
-				$conf->ncf->enabled,
-				$conf->ncf->enabled,
-				$conf->ncf->enabled
+				'1',
+				'1',
+				'1'
 			)
 		);
 

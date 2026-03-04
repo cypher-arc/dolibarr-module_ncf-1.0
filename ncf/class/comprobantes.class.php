@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /* Copyright (C) 2017  Laurent Destailleur <eldy@users.sourceforge.net>
  * Copyright (C) ---Put here your own copyright and developer email---
  *
@@ -100,19 +101,19 @@ class Comprobantes extends CommonObject
 	 * @var array  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
 	 */
 	public $fields=array(
-		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'css'=>'left', 'comment'=>"Id"),
-		'ref' => array('type'=>'varchar(20)', 'label'=>'Ref', 'enabled'=>'1', 'position'=>10, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1',),
-		'date_creation' => array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>-2,),
-		'tms' => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>30, 'notnull'=>0, 'visible'=>-2,),
-		'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>'1', 'position'=>40, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
-		'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>'1', 'position'=>50, 'notnull'=>-1, 'visible'=>-2,),
+		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'css'=>'left', 'comment'=>"Id", 'searchall'=>0, 'help'=>''),
+		'ref' => array('type'=>'varchar(20)', 'label'=>'Ref', 'enabled'=>'1', 'position'=>10, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'help'=>''),
+		'date_creation' => array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>-2, 'searchall'=>0, 'help'=>''),
+		'tms' => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>30, 'notnull'=>0, 'visible'=>-2, 'searchall'=>0, 'help'=>''),
+		'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>'1', 'position'=>40, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid', 'searchall'=>0, 'help'=>''),
+		'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>'1', 'position'=>50, 'notnull'=>-1, 'visible'=>-2, 'searchall'=>0, 'help'=>''),
 
 
-		'tipo_comprobante' => array('type'=>'varchar(5)', 'label'=>'Tipo de comprobante', 'enabled'=>'1', 'position'=>60, 'notnull'=>1, 'visible'=>1, 'searchall'=>1, 'showoncombobox'=>'1',),
-		'n_inicial' => array('type'=>'integer', 'label'=>'Número (inicial)', 'enabled'=>'1', 'position'=>100, 'notnull'=>1, 'visible'=>1,),
-		'n_final' => array('type'=>'integer', 'label'=>'Número (final)', 'enabled'=>'1', 'position'=>110, 'notnull'=>1, 'visible'=>1,),
-		'sucursal' => array('type'=>'varchar(120)', 'label'=>'Sucursal', 'enabled'=>'1', 'position'=>125, 'notnull'=>1, 'visible'=>1, 'value'=>'Principal'),
-		'fecha_vencimiento' => array('type'=>'date', 'label'=>'Fecha de vencimiento', 'enabled'=>'1', 'position'=>130, 'notnull'=>1, 'visible'=>1,),
+		'tipo_comprobante' => array('type'=>'varchar(5)', 'label'=>'Tipo de comprobante', 'enabled'=>'1', 'position'=>60, 'notnull'=>1, 'visible'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'help'=>''),
+		'n_inicial' => array('type'=>'integer', 'label'=>'Número (inicial)', 'enabled'=>'1', 'position'=>100, 'notnull'=>1, 'visible'=>1, 'searchall'=>0, 'help'=>''),
+		'n_final' => array('type'=>'integer', 'label'=>'Número (final)', 'enabled'=>'1', 'position'=>110, 'notnull'=>1, 'visible'=>1, 'searchall'=>0, 'help'=>''),
+		'sucursal' => array('type'=>'varchar(120)', 'label'=>'Sucursal', 'enabled'=>'1', 'position'=>125, 'notnull'=>1, 'visible'=>1, 'value'=>'Principal', 'searchall'=>0, 'help'=>''),
+		'fecha_vencimiento' => array('type'=>'date', 'label'=>'Fecha de vencimiento', 'enabled'=>'1', 'position'=>130, 'notnull'=>1, 'visible'=>1, 'searchall'=>0, 'help'=>''),
 	);
 
 	public $rowid;
@@ -163,6 +164,8 @@ class Comprobantes extends CommonObject
 	//  */
 	// public $lines = array();
 
+	#public DoliDB $db;
+	public $db;
 
 
 	/**
@@ -262,13 +265,13 @@ class Comprobantes extends CommonObject
 		if (property_exists($object, 'date_modification')) { $object->date_modification = null; }
 		// ...
 		// Clear extrafields that are unique
-		if (is_array($object->array_options) && count($object->array_options) > 0)
+		if (isset($object->array_options) && is_array($object->array_options) && count($object->array_options) > 0)
 		{
 			$extrafields->fetch_name_optionals_label($this->table_element);
 			foreach ($object->array_options as $key => $option)
 			{
 				$shortkey = preg_replace('/options_/', '', $key);
-				if (!empty($extrafields->attributes[$this->table_element]['unique'][$shortkey]))
+				if (!empty($extrafields->attributes[$this->table_element]) && is_array($extrafields->attributes[$this->table_element]) && !empty($extrafields->attributes[$this->table_element]['unique'][$shortkey]))
 				{
 					//var_dump($key); var_dump($clonedObj->array_options[$key]); exit;
 					unset($object->array_options[$key]);
@@ -370,7 +373,7 @@ class Comprobantes extends CommonObject
 		else $sql .= ' WHERE 1 = 1';
 		// Manage filter
 		$sqlwhere = array();
-		if (count($filter) > 0) {
+		if (isset($filter) && is_array($filter) && count($filter) > 0) {
 			foreach ($filter as $key => $value) {
 				if ($key == 't.rowid') {
 					$sqlwhere[] = $key.'='.$value;
@@ -817,7 +820,7 @@ class Comprobantes extends CommonObject
 		$sql = 'SELECT rowid, date_creation as datec, tms as datem,';
 		$sql .= ' fk_user_creat, fk_user_modif';
 		$sql .= ' FROM '.MAIN_DB_PREFIX.$this->table_element.' as t';
-		$sql .= ' WHERE t.rowid = '.$id;
+		$sql .= ' WHERE t.rowid = '.((int) $id);
 		$result = $this->db->query($sql);
 		if ($result)
 		{
@@ -825,30 +828,15 @@ class Comprobantes extends CommonObject
 			{
 				$obj = $this->db->fetch_object($result);
 				$this->id = $obj->rowid;
-				if ($obj->fk_user_author)
+				if (!empty($obj->fk_user_creat))
 				{
 					$cuser = new User($this->db);
-					$cuser->fetch($obj->fk_user_author);
+					$cuser->fetch($obj->fk_user_creat);
 					$this->user_creation = $cuser;
-				}
-
-				if ($obj->fk_user_valid)
-				{
-					$vuser = new User($this->db);
-					$vuser->fetch($obj->fk_user_valid);
-					$this->user_validation = $vuser;
-				}
-
-				if ($obj->fk_user_cloture)
-				{
-					$cluser = new User($this->db);
-					$cluser->fetch($obj->fk_user_cloture);
-					$this->user_cloture = $cluser;
 				}
 
 				$this->date_creation     = $this->db->jdate($obj->datec);
 				$this->date_modification = $this->db->jdate($obj->datem);
-				$this->date_validation   = $this->db->jdate($obj->datev);
 			}
 
 			$this->db->free($result);
@@ -1047,12 +1035,13 @@ class Comprobantes extends CommonObject
 	}
 
 	public function sql_result($table, $rows, $where='', $limit=0){
+		if (strpos($table, MAIN_DB_PREFIX) !== 0) {
+			$table = MAIN_DB_PREFIX . preg_replace('/^llx_/', '', $table);
+		}
 		$sql = 'SELECT '.$rows.' FROM '.$table;
 
 		if ($where != '') {
-			$sql .= ' WHERE '.$where.';';
-		}else {
-			$sql .= ';';
+			$sql .= ' WHERE '.$where;
 		}
 
 		$resql=$this->db->query($sql);
@@ -1101,9 +1090,10 @@ class Comprobantes extends CommonObject
 		print ajax_combobox('select'.$htmlname);
 	}
 
-	public function get_data_html_selection($table, $id=''){
-		$rel = $this->sql_result($table, 'label', 'code="'.$id.'"');
-		return $rel[0]->label;
+	public function get_data_html_selection($table, $id = '')
+	{
+		$rel = $this->sql_result($table, 'label', 'code="'.$this->db->escape($id).'"');
+		return !empty($rel[0]->label) ? $rel[0]->label : '';
 	}
 
 	public function get_next_id(){
@@ -1131,8 +1121,7 @@ class Comprobantes extends CommonObject
 
 		$date = dol_now();
 
-		//$yymm = strftime("%y%m",time());
-		$yymm = strftime("%y%m", $date);
+		$yymm = date("ym", $date);
 
 		if ($max >= (pow(10, 4) - 1)) {
 			$num = $max + 1;
@@ -1159,10 +1148,10 @@ class Comprobantes extends CommonObject
 		SELECT IF(val > val2, val, val2) AS val, n_inicial, n_final
 		FROM (
 			SELECT IF(MAX(t.c_n_comprobante) IS NULL, 0, MAX(t.c_n_comprobante)) AS val, IF(MAX(e.c_n_comprobante) IS NULL, 0, MAX(e.c_n_comprobante)) AS val2, c.n_inicial, c.n_final
-			FROM llx_ncf_comprobantes AS c
-			LEFT JOIN llx_facture_extrafields AS t ON c.rowid=t.c_fk_comprobante
-			LEFT JOIN llx_facture_fourn_extrafields AS e ON c.rowid=e.c_fk_comprobante
-			WHERE c.rowid='.$id.' GROUP BY c.rowid
+			FROM '.MAIN_DB_PREFIX.'ncf_comprobantes AS c
+			LEFT JOIN '.MAIN_DB_PREFIX.'facture_extrafields AS t ON c.rowid=t.c_fk_comprobante
+			LEFT JOIN '.MAIN_DB_PREFIX.'facture_fourn_extrafields AS e ON c.rowid=e.c_fk_comprobante
+			WHERE c.rowid='.((int) $id).' GROUP BY c.rowid, c.n_inicial, c.n_final
 		) AS t
 		';
 

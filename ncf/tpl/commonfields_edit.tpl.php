@@ -52,12 +52,12 @@ foreach ($object->fields as $key => $val)
 	print '</td>';
 
 	print '<td>';
-	if ($key == 'tipo_comprobante' || $key == 'tipo_ingresos' | $key == 't_ingresos' || $key == 't_pago'){
+	if ($key == 'tipo_comprobante' || $key == 'tipo_ingresos' || $key == 't_ingresos' || $key == 't_pago'){
 		//objeto comprobante
 		$value = GETPOSTISSET($key) ? GETPOST($key) : $object->$key;
-		if ($key == 'tipo_comprobante') $object->get_html_section('llx_c_tipos_comprobante', $key, $value);
-		if ($key == 'tipo_ingresos' || $key == 't_ingresos' ) $object->get_html_section('llx_c_tipos_ingresos', $key, $value);
-		if ($key == 't_pago') $object->get_html_section('llx_c_terminos_pago', $key, $value);
+		if ($key == 'tipo_comprobante') $object->get_html_section('c_tipos_comprobante', $key, $value);
+		if ($key == 'tipo_ingresos' || $key == 't_ingresos' ) $object->get_html_section('c_tipos_ingresos', $key, $value);
+		if ($key == 't_pago') $object->get_html_section('c_terminos_pago', $key, $value);
 	} else{
 		if (!empty($val['picto'])) { print img_picto('', $val['picto']); }
 		if (in_array($val['type'], array('int', 'integer'))) $value = GETPOSTISSET($key) ?GETPOST($key, 'int') : $object->$key;
@@ -72,7 +72,7 @@ foreach ($object->fields as $key => $val)
 		}
 		else $value = GETPOSTISSET($key) ? GETPOST($key, 'alpha') : $object->$key;
 		//var_dump($val.' '.$key.' '.$value);
-		if ($val['noteditable']) print $object->showOutputField($val, $key, $value, '', '', '', 0);
+		if (!empty($val['noteditable'])) print $object->showOutputField($val, $key, $value, '', '', '', 0);
 		else print $object->showInputField($val, $key, $value, '', '', '', 0);
 	}
 

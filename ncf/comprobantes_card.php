@@ -264,9 +264,9 @@ if ($action == 'create')
 		print '<td>';
 		if ($key == 'tipo_comprobante' || $key == 'tipo_ingresos' || $key == 't_ingresos' || $key == 'ref' || $key == 't_pago'){
 			//objeto comprobante
-			if ($key == 'tipo_comprobante') $object->get_html_section('llx_c_tipos_comprobante', $key);
-			if ($key == 'tipo_ingresos' || $key == 't_ingresos') $object->get_html_section('llx_c_tipos_ingresos', $key);
-			if ($key == 't_pago') $object->get_html_section('llx_c_terminos_pago', $key);
+			if ($key == 'tipo_comprobante') $object->get_html_section('c_tipos_comprobante', $key);
+			if ($key == 'tipo_ingresos' || $key == 't_ingresos') $object->get_html_section('c_tipos_ingresos', $key);
+			if ($key == 't_pago') $object->get_html_section('c_terminos_pago', $key);
 			if ($key == 'ref') print $object->showInputField($val, $key, $object->get_next_id(), '', '', '', 0);
 		} else{
 			if (!empty($val['picto'])) { print img_picto('', $val['picto']); }
@@ -276,7 +276,7 @@ if ($action == 'create')
 			elseif ($val['type'] == 'datetime') $value = dol_mktime(GETPOST($key.'hour', 'int'), GETPOST($key.'min', 'int'), 0, GETPOST($key.'month', 'int'), GETPOST($key.'day', 'int'), GETPOST($key.'year', 'int'));
 			elseif ($val['type'] == 'boolean') $value = (GETPOST($key) == 'on' ? 1 : 0);
 			else $value = GETPOST($key, 'alphanohtml');
-			if ($val['noteditable']){
+			if (!empty($val['noteditable'])){
 				echo "$key";
 				print $object->showOutputField($val, $key, $value, '', '', '', 0);
 			}

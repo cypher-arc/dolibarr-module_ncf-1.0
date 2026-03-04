@@ -242,7 +242,7 @@ class pdf_crabencf extends ModelePDFFactures
 		// Load translation files required by the page
 		$outputlangs->loadLangs(array("main", "bills", "products", "dict", "companies"));
 
-		$nblines = count($object->lines);
+		$nblines = is_array($object->lines) ? count($object->lines) : 0;
 
 		// Loop on each lines to detect if there is at least one image to show
 		$realpatharray = array();
@@ -270,7 +270,7 @@ class pdf_crabencf extends ModelePDFFactures
 				if ($realpath) $realpatharray[$i] = $realpath;
 			}
 		}
-		if (count($realpatharray) == 0) $this->posxpicture = $this->posxtva;
+		if (is_array($realpatharray) && count($realpatharray) == 0) $this->posxpicture = $this->posxtva;
 
 		if ($conf->facture->dir_output)
 		{
@@ -313,8 +313,8 @@ class pdf_crabencf extends ModelePDFFactures
 				$reshook = $hookmanager->executeHooks('beforePDFCreation', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 
 				// Set nblines with the new facture lines content after hook
-				$nblines = count($object->lines);
-				$nbpayments = count($object->getListOfPayments());
+				$nblines = is_array($object->lines) ? count($object->lines) : 0;
+				$nbpayments = is_array($object->getListOfPayments()) ? count($object->getListOfPayments()) : 0;
 
 				// Create pdf instance
 				$pdf = pdf_getInstance($this->format);
@@ -374,7 +374,7 @@ class pdf_crabencf extends ModelePDFFactures
 				// Set $this->atleastonediscount if you have at least one discount
 				for ($i = 0; $i < $nblines; $i++)
 				{
-					if ($object->lines[$i]->remise_percent)
+					if (isset($object->lines[$i]) && $object->lines[$i]->remise_percent)
 					{
 						$this->atleastonediscount++;
 					}

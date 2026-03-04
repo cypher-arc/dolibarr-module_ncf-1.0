@@ -22,7 +22,7 @@ CREATE TABLE llx_ncf_comprobantes(
 	fk_user_creat integer NOT NULL,
 	fk_user_modif integer,
 
-	tipo_comprobante varchar(3) NOT NULL,
+	tipo_comprobante varchar(12) NOT NULL,
 	n_inicial integer NOT NULL,
 	n_final integer NOT NULL,
 	sucursal varchar(120) NOT NULL,

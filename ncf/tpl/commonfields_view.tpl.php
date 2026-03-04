@@ -67,7 +67,7 @@ foreach ($object->fields as $key => $val)
 	if (in_array($val['type'], array('text', 'html'))) print '<div class="longmessagecut">';
 
 	if($key == 'tipo_comprobante' || $key == 'tipo_ingresos' || $key == 't_pago' || $key == 't_ingresos'){
-		if ($key == 'tipo_comprobante') print $object->showOutputField($val, $key, $object->get_data_html_selection('llx_c_tipos_comprobante', $value), '', '', '', 0);
+		if ($key == 'tipo_comprobante') print $object->showOutputField($val, $key, $object->get_data_html_selection('c_tipos_comprobante', $value), '', '', '', 0);
 	}else print $object->showOutputField($val, $key, $value, '', '', '', 0);
 
 	//print dol_escape_htmltag($object->$key, 1, 1);

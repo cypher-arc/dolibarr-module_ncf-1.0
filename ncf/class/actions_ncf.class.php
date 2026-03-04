@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /* Copyright (C) 2021 SuperAdmin
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +32,7 @@ class ActionsNCF
 	/**
 	 * @var DoliDB Database handler.
 	 */
-	public $db;
+	public ?DoliDB $db = null;
 
 	/**
 	 * @var string Error code (or message)

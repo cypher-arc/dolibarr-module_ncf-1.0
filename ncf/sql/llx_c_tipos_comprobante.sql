@@ -16,7 +16,7 @@
 
 CREATE TABLE llx_c_tipos_comprobante(
 	rowid integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
-	code varchar(3) NOT NULL, 
+	code varchar(12) NOT NULL, 
 	label varchar(100) NOT NULL,
 	sublabel varchar(255) NOT NULL,
 	active integer

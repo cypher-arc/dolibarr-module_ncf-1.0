@@ -16,7 +16,7 @@
 
 CREATE TABLE llx_c_tipos_retencion_base(
 	rowid integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
-	code varchar(5) NOT NULL, 
+	code varchar(12) NOT NULL, 
 	label varchar(100) NOT NULL,
 	percent integer,
 	active integer

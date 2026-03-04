@@ -82,10 +82,10 @@ function ComprobantesDataTxt($object){
 
 			 $sql = '
 					 SELECT * FROM(
-					 SELECT t.c_n_comprobante AS num, t.c_sec_ntf AS sec, t.tms as tms FROM llx_facture_extrafields as t
+					 SELECT t.c_n_comprobante AS num, t.c_sec_ntf AS sec, t.tms as tms FROM '.MAIN_DB_PREFIX.'facture_extrafields as t
 					 WHERE t.c_fk_comprobante='.$object->id.'
 					 UNION
-					 SELECT b.c_n_comprobante AS num, b.c_sec_ntf AS sec, b.tms as tms from llx_facture_fourn_extrafields as b
+					 SELECT b.c_n_comprobante AS num, b.c_sec_ntf AS sec, b.tms as tms from '.MAIN_DB_PREFIX.'facture_fourn_extrafields as b
 					 WHERE b.c_fk_comprobante='.$object->id.'
 					 ) AS t
 					 ORDER BY num ASC
@@ -116,74 +116,67 @@ function ComprobantesDataTxt($object){
 
 }
 
-function ComprobantesPdfHead($id=''){
-	 global $db, $langs, $conf, $user;
-	 $obj = new Comprobantes($db);
- $ex = explode('/', $_SERVER['REQUEST_URI']);
-	 //$table='llx_facture';
- if ( (in_array('facture', $ex) && (in_array('fourn', $ex)) || in_array('compta', $ex)) ){
-	 $table = (in_array('compta', $ex)) ? 'llx_facture' : 'llx_facture_fourn';
-	 $rows_t = 'fe.c_sec_ntf AS sec, c.tipo_comprobante as label';
-	 // if ($table == 'llx_facture') $rows_t = 'fe.c_sec_ntf AS sec, fe.c_fk_comprobante AS label';
-	 // if ($table == 'llx_facture_fourn') $rows_t = 'fe.c_sec_ntf AS sec';
-			 $sql = '
-			 SELECT '.$rows_t.'
-			 FROM '.$table.'_extrafields AS fe
-			 INNER JOIN '.$table.' AS tt ON tt.rowid=fe.fk_object
-			 LEFT JOIN llx_ncf_comprobantes AS c ON c.rowid=fe.c_fk_comprobante
-			 LEFT JOIN llx_c_tipos_comprobante AS b ON b.code=c.tipo_comprobante
-			 WHERE tt.rowid='.$id.'
-			 ';
-			 $rel = $obj->sql_r($sql);
+function ComprobantesPdfHead($id = 0)
+{
+	global $db, $langs, $conf, $user;
+	$obj = new Comprobantes($db);
+	$ex = explode('/', $_SERVER['REQUEST_URI'] ?? '');
+	if ((in_array('facture', $ex) && (in_array('fourn', $ex)) || in_array('compta', $ex))) {
+		$table = (in_array('compta', $ex)) ? 'facture' : 'facture_fourn';
+		$rows_t = 'fe.c_sec_ntf AS sec, c.tipo_comprobante as label';
+		$sql = 'SELECT '.$rows_t;
+		$sql .= ' FROM '.MAIN_DB_PREFIX.$table.'_extrafields AS fe';
+		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.$table.' AS tt ON tt.rowid=fe.fk_object';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'ncf_comprobantes AS c ON c.rowid=fe.c_fk_comprobante';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_tipos_comprobante AS b ON b.code=c.tipo_comprobante';
+		$sql .= ' WHERE tt.rowid='.((int) $id);
+		$rel = $obj->sql_r($sql);
 
-			 foreach($rel AS $r) {
-					 if (!isset($r->label) || $r->label == '') $r->label = '---';
-					 if (!isset($r->sec) || $r->sec == '') $r->sec = '---';
-					 // if (!isset($r->fven) || $r->fven == '') $r->fven = '---';
+		if (!empty($rel)) {
+			foreach ($rel as $r) {
+				if (!isset($r->label) || $r->label == '') $r->label = '---';
+				if (!isset($r->sec) || $r->sec == '') $r->sec = '---';
+			}
+			return $rel[0];
+		}
+	}
 
-					 // if ($r->fven != '---') {
-							 // $r->fven = date("d/m/Y", strtotime($object->date_echeance));
-					 // }
-			 }
-
-			 return $rel[0];
- }
-
-	 return 0;
+	return 0;
 }
 
-function ComprobantesPdfIvaRetencion($id='') {
-	 global $db;
-	 $obj = new Comprobantes($db);
- $ex = explode('/', $_SERVER['REQUEST_URI']);
+function ComprobantesPdfIvaRetencion($id = 0)
+{
+	global $db;
+	$obj = new Comprobantes($db);
+	$ex = explode('/', $_SERVER['REQUEST_URI'] ?? '');
 
- if ( (in_array('facture', $ex) && (in_array('fourn', $ex)) || in_array('compta', $ex)) ){
-			 $table = (in_array('compta', $ex)) ? 'llx_facture' : 'llx_facture_fourn';
-			 $labels = 'IF(f.c_retencion=1, p.percent, "no") AS itebis, IF(f.c_retencion=1, b.percent, "no") AS base,p.label AS itebislabel, b.label AS baselabel';
+	if ((in_array('facture', $ex) && (in_array('fourn', $ex)) || in_array('compta', $ex))) {
+		$table = (in_array('compta', $ex)) ? 'facture' : 'facture_fourn';
+		$labels = 'IF(f.c_retencion=1, p.percent, "no") AS itebis, IF(f.c_retencion=1, b.percent, "no") AS base, p.label AS itebislabel, b.label AS baselabel';
 
-	 $sql = '
-			 SELECT '.$labels.'
-			 FROM '.$table .'_extrafields as f
-			 LEFT JOIN llx_c_tipos_retencion_itebis AS p ON p.rowid=f.c_fk_rten_itebis
-			 LEFT JOIN llx_c_tipos_retencion_base AS b ON b.rowid=f.c_fk_rten_base
-			 WHERE fk_object='.$id.'
-			 ';
-			 $rel = $obj->sql_r($sql);
+		$sql = 'SELECT '.$labels;
+		$sql .= ' FROM '.MAIN_DB_PREFIX.$table.'_extrafields as f';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_tipos_retencion_itebis AS p ON p.rowid=f.c_fk_rten_itebis';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_tipos_retencion_base AS b ON b.rowid=f.c_fk_rten_base';
+		$sql .= ' WHERE fk_object='.((int) $id);
+		$rel = $obj->sql_r($sql);
 
-			 foreach ($rel as $r) {
-					 if (!isset($r->itebis) || $r->itebis == '') $r->itebis = 'no';
-					 if (!isset($r->base) || $r->base == '') $r->base = 'no';
-			 }
-			 return $rel[0];
- }
+		if (!empty($rel)) {
+			foreach ($rel as $r) {
+				if (!isset($r->itebis) || $r->itebis == '') $r->itebis = 'no';
+				if (!isset($r->base) || $r->base == '') $r->base = 'no';
+			}
+			return $rel[0];
+		}
+	}
 
-	 return 0;
+	return 0;
 }
 
 function ComprobantesCreateFields(){
 	 global $db, $langs, $conf, $user;
 	 $obj = new Comprobantes($db);
-	 $tables = Array('llx_facture_extrafields', 'llx_facture_fourn_extrafields');
+	 $tables = Array(MAIN_DB_PREFIX.'facture_extrafields', MAIN_DB_PREFIX.'facture_fourn_extrafields');
 	 $rel = $obj->sql_r('SHOW COLUMNS FROM '.$tables[0].' WHERE Field = "c_fk_comprobante"');
 
 	 if (!isset($rel[0]->Field)) {
@@ -199,9 +192,9 @@ function ComprobantesProveedores(){
 
 	 if ($conf->ncf->enabled && $user->rights->ncf->facturasprov->write){
 			 $obj = new Comprobantes($db);
-			 $rel = $obj->sql_result('llx_entrepot', 'rowid AS id, ref AS label', 'statut=1');
-			 $rel2 = $obj->sql_result('llx_c_tipos_retencion_itebis', 'rowid AS id, label', 'active=1');
-			 $rel4 = $obj->sql_result('llx_c_tipos_retencion_base', 'rowid AS id, label', 'active=1');
+			 $rel = $obj->sql_result('entrepot', 'rowid AS id, ref AS label', 'statut=1');
+			 $rel2 = $obj->sql_result('c_tipos_retencion_itebis', 'rowid AS id, label', 'active=1');
+			 $rel4 = $obj->sql_result('c_tipos_retencion_base', 'rowid AS id, label', 'active=1');
 			 $data = getComprobanteNextNumber();
 			 $rel3 = [
 					 (object)['id'=>'1', 'label'=>'Automático'],
@@ -302,9 +295,9 @@ function ComprobantesClientes(){
 
 	if ($conf->ncf->enabled && $user->rights->ncf->facturasprov->write){
 			$obj = new Comprobantes($db);
-			$rel = $obj->sql_result('llx_entrepot', 'rowid AS id, ref AS label', 'statut=1');
-			$rel2 = $obj->sql_result('llx_c_tipos_retencion_itebis', 'rowid AS id, label', 'active=1');
-			$rel4 = $obj->sql_result('llx_c_tipos_retencion_base', 'rowid AS id, label', 'active=1');
+			$rel = $obj->sql_result('entrepot', 'rowid AS id, ref AS label', 'statut=1');
+			$rel2 = $obj->sql_result('c_tipos_retencion_itebis', 'rowid AS id, label', 'active=1');
+			$rel4 = $obj->sql_result('c_tipos_retencion_base', 'rowid AS id, label', 'active=1');
 			$data = getComprobanteNextNumber();
 			$rel3 = [
 					(object)['id'=>'1', 'label'=>'Automático'],
@@ -391,16 +384,17 @@ function ComprobantesClientes(){
 }
 
 
-function getComprobanteNextNumber(){
-	 global $db, $langs, $conf;
-	 $obj = new Comprobantes($db);
-	 $now = strftime('%Y-%m-%d', dol_now());
+function getComprobanteNextNumber()
+{
+	global $db, $langs, $conf;
+	$obj = new Comprobantes($db);
+	$now = date('Y-m-d', dol_now());
 
-	 $sql = 'SELECT * FROM ( SELECT id, IF(val > val2, val, val2) AS val, label, tipo_comprobante, n_inicial, n_final FROM ( SELECT c.rowid AS id, IF(MAX(t.c_n_comprobante) IS NULL, 0, ';
-	 $sql .= 'MAX(t.c_n_comprobante)) AS val, IF(MAX(e.c_n_comprobante) IS NULL, 0, MAX(e.c_n_comprobante)) AS val2, tc.sublabel AS label, c.tipo_comprobante, c.n_inicial, c.n_final FROM ';
-	 $sql .= 'llx_ncf_comprobantes AS c LEFT JOIN llx_facture_extrafields AS t ON c.rowid=t.c_fk_comprobante LEFT JOIN llx_facture_fourn_extrafields AS e ON c.rowid=e.c_fk_comprobante LEFT JOIN ';
-	 $sql .= 'llx_c_tipos_comprobante AS tc ON tc.code = c.tipo_comprobante WHERE "'.$now.'" < c.fecha_vencimiento GROUP BY c.rowid) AS t ) AS t WHERE val < n_final';
-	 $rel = $obj->sql_r($sql);
+	$sql = 'SELECT * FROM ( SELECT id, IF(val > val2, val, val2) AS val, label, tipo_comprobante, n_inicial, n_final FROM ( SELECT c.rowid AS id, IF(MAX(t.c_n_comprobante) IS NULL, 0, ';
+	$sql .= 'MAX(t.c_n_comprobante)) AS val, IF(MAX(e.c_n_comprobante) IS NULL, 0, MAX(e.c_n_comprobante)) AS val2, tc.sublabel AS label, c.tipo_comprobante, c.n_inicial, c.n_final FROM ';
+	$sql .= MAIN_DB_PREFIX.'ncf_comprobantes AS c LEFT JOIN '.MAIN_DB_PREFIX.'facture_extrafields AS t ON c.rowid=t.c_fk_comprobante LEFT JOIN '.MAIN_DB_PREFIX.'facture_fourn_extrafields AS e ON c.rowid=e.c_fk_comprobante LEFT JOIN ';
+	$sql .= MAIN_DB_PREFIX.'c_tipos_comprobante AS tc ON tc.code = c.tipo_comprobante WHERE "'.$now.'" < c.fecha_vencimiento GROUP BY c.rowid, tc.sublabel, c.tipo_comprobante, c.n_inicial, c.n_final) AS t ) AS t WHERE val < n_final';
+	$rel = $obj->sql_r($sql);
 
 	 $nprefix = 8;
 
@@ -464,36 +458,39 @@ function getComprobanteNexthtmlSelection($data, $htmlname='', $id=''){
 	 print ajax_combobox('options_'.$htmlname);
 }
 
-function ComprobantesPdfNcf($id=''){
-	 global $db, $langs, $conf, $user;
-	 // $obj = new Comprobantes($db);
- $ex = explode('/', $_SERVER['REQUEST_URI']);
+function ComprobantesPdfNcf($id = 0)
+{
+	global $db, $langs, $conf, $user;
+	$obj = new Comprobantes($db);
+	$ex = explode('/', $_SERVER['REQUEST_URI'] ?? '');
 
- if ( in_array('facture', $ex) && (in_array('fourn', $ex) || in_array('compta', $ex)) ){
-			 $table = (in_array('compta', $ex)) ? 'llx_facture' : 'llx_facture_fourn';
-			 $labels = 'f.c_sec_ntf AS ncf, c.sucursal AS suc, DATE_FORMAT(c.fecha_vencimiento, "%d/%m/%Y") AS fven';
-			 if ($table == 'llx_facture_fourn')  $labels = 'IF(f.c_retencion=1, p.percent, "no") AS prop, f.c_sec_ntf AS ncf, c.sucursal AS suc, DATE_FORMAT(c.fecha_vencimiento, "%d/%m/%Y") AS fven';
+	if (in_array('facture', $ex) && (in_array('fourn', $ex) || in_array('compta', $ex))) {
+		$table = (in_array('compta', $ex)) ? 'facture' : 'facture_fourn';
+		$labels = 'f.c_sec_ntf AS ncf, c.sucursal AS suc, DATE_FORMAT(c.fecha_vencimiento, "%d/%m/%Y") AS fven';
+		if ($table == 'facture_fourn')  $labels = 'IF(f.c_retencion=1, p.percent, "no") AS prop, f.c_sec_ntf AS ncf, c.sucursal AS suc, DATE_FORMAT(c.fecha_vencimiento, "%d/%m/%Y") AS fven';
 
-	 $sql = '
-			 SELECT '.$labels.'
-			 FROM '.$table .'_extrafields as f
-			 LEFT JOIN llx_ncf_comprobantes as c ON c.rowid=f.c_fk_comprobante
-			 '.(($table == 'llx_facture_fourn') ? 'LEFT JOIN llx_c_tipos_retencion_itebis AS p ON p.rowid=f.c_fk_rten_itebis' : '').'
-			 WHERE fk_object='.$id.'
-			 ';
+		$sql = 'SELECT '.$labels;
+		$sql .= ' FROM '.MAIN_DB_PREFIX.$table.'_extrafields as f';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'ncf_comprobantes as c ON c.rowid=f.c_fk_comprobante';
+		if ($table == 'facture_fourn') {
+			$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_tipos_retencion_itebis AS p ON p.rowid=f.c_fk_rten_itebis';
+		}
+		$sql .= ' WHERE fk_object='.((int) $id);
 
-			 $rel = $obj->sql_r($sql);
+		$rel = $obj->sql_r($sql);
 
-			 foreach ($rel as $r) {
-					 if (!isset($r->ncf)) $r->ncf = '---';
-					 if (!isset($r->suc)) $r->suc = '---';
-					 if (!isset($r->fven)) $r->fven = '---';
-					 if (!isset($r->prop)) $r->prop = '---';
-			 }
-			 return $rel[0];
- }
+		if (!empty($rel)) {
+			foreach ($rel as $r) {
+				if (!isset($r->ncf)) $r->ncf = '---';
+				if (!isset($r->suc)) $r->suc = '---';
+				if (!isset($r->fven)) $r->fven = '---';
+				if (!isset($r->prop)) $r->prop = '---';
+			}
+			return $rel[0];
+		}
+	}
 
-	 return 0;
+	return 0;
 }
 
 function comprobantesUpdateTotalAmount($ob){
@@ -501,7 +498,7 @@ function comprobantesUpdateTotalAmount($ob){
 	 // $obj = new Comprobantes($db);
 	 $ex = explode('/', $_SERVER['REQUEST_URI']);
 	 if ( in_array('facture', $ex) && (in_array('fourn', $ex) || in_array('compta', $ex)) ){
-			 $table = (in_array('compta', $ex)) ? 'llx_facture' : 'llx_facture_fourn';
+			 $table = (in_array('compta', $ex)) ? MAIN_DB_PREFIX.'facture' : MAIN_DB_PREFIX.'facture_fourn';
 
 			 $id = $ob->id;
 			 $total_ht = round($ob->total_ht, 2);

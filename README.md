@@ -1,17 +1,27 @@
-# Comprobantes NCF
-## _Instalación_
-1. Entrar en la carpeta de instalación de Dolibarr dentro del servidor
-2. Descomprimir el paquete dentro de la carpeta '/htdocs/'.
-3. Agregamos las nuevas plantillas PDF a sus respectivos módulos (las plantillas se encuentran en `carpetadeinstalacion/htdocs/ncf/doc`).
-  a) Copiamos el archivo que se encuentra en 'carpetadeinstalacion/htdocs/ncf/doc/cliente' y lo pegamos dentro de carpetadeinstalacion/htdocs/core/modules/facture/doc/
-  b) Copiamos el archivo que se encuentra en 'carpetadeinstalacion/htdocs/ncf/doc/proveedor' y lo pegamos dentro de carpetadeinstalacion/htdocs/core/modules/supplier_invoice/doc/
-4. Entrar a las configuraciones del módulo de facturas y del módulo de proveedores para activar la plantilla modificada de cada uno de los módulos y marcarla como predeterminada.
-5. Activar el módulo desde las configuraciones de Dolibarr
+# DOLIBARR ERP & CRM custom directory for external modules
 
-## _Módulos que deben estar activados para el correcto funcionamiento_
-1. Facturas
-2. Vendedores / Proveedores
-3. Terceros
-4. Bancos y cajas
-5. Productos
-6. Servicios
+This directory is dedicated to store external modules.
+To use it, just copy here the directory of the module into this directory.
+
+Note: On linux or MAC systems, it is better to unzip/store the external module directory into
+a different place than this directory and just adding a symbolic link here to the htdocs directory
+of the module.
+
+For example on Linux OS: Get the module from the command
+
+`mkdir ~/git; cd ~/git`
+
+`git clone https://git.framasoft.org/p/newmodule/newmodule.git`
+
+Then create the symbolic link
+
+`ln -fs ~/git/newmodule/htdocs /path_to_dolibarr/htdocs/custom/newmodule`
+
+WARNING !!!
+Check also that the /custom directory is active by adding into dolibarr `conf/conf.php` file the following
+two lines, so dolibarr will also scan /custom directory to find external external modules:
+
+```php
+$dolibarr_main_url_root_alt='/custom';
+$dolibarr_main_document_root_alt='/path_to_dolibarr/htdocs/custom/';
+```
